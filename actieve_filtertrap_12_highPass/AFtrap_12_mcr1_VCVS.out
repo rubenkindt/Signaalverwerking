@@ -1,0 +1,931 @@
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     CIRCUIT DESCRIPTION
+
+
+******************************************************************************
+
+
+
+* HightPass 12                          -
+*                               -
+* Author: Ruben Kindt           -
+* Date: 24/04/2018                      -
+*----------------------------
+*
+*--------- MODELS for passive components ---------
+.model rmod  res(r = 1k    DEV  1%)
+.model cmod  cap(c = 1n    DEV  1%)
+.inc opamp84VCVS.cir
+
+**** INCLUDING opamp84VCVS.cir ****
+*
+* vcvs opamp model (TL084)
+*
+* Adc   = 200000   (amplification at DC)
+* fu    = 3 MHz    (unity gain frequency)
+* f-3dB = 5 Hz = fu/Adc
+* Rin   = 2E6 mega 1E12 Ohm (input impedance) 
+* Rout  = 50 uit 100 Ohm  (output impedance)
+
+* CONNECTIONS:    NON-INVERTING INPUT
+*                 | INVERTING INPUT
+*                 | | OUTPUT
+*                 | | |
+.SUBCKT opamp84  1 2 3
+E1    10  0    1 2   200000
+E2    30  0   20 0   1
+R1    10 20  60KOHM
+C1    20  0  159.2NFARAD
+ROUT  30  3  5OHM
+RIN    1  2  2E6OHM
+.ENDS
+
+**** RESUMING AFtrap_12_mcr1_VCVS.cir ****
+*--------- NETLISTS ------------------------------
+*--- netlist bridged T-network - H(fn) = 1/100 ---
+*.SUBCKT highPass12 1 100 5
+* CONNECTIONS:   NON-INVERTING INPUT
+*                | INVERTING INPUT
+*                | | POSITIVE POWER SUPPLY
+*                | | | NEGATIVE POWER SUPPLY
+*                | | | | OUTPUT
+*                | | | | |
+*                TL084   1 2 3 4 5
+Xopamp1  7  2 5 opamp84  
+Xopamp2  0  6 8 opamp84  
+Xopamp3  9  0 4 opamp84  
+*name knoop1 knoop2 model mulitplier
+r1   5   6 rmod  100
+r2   8   9 rmod  100
+r3   1   2 rmod  1
+r4   7   0 rmod  1
+r5   2   4 rmod  2
+r6   2   5 rmod  2
+r7   7   8 rmod  24.5
+
+c1   6   8 cmod  1*1
+c2   9   4 cmod  2.53 
+*.ends
+*Vcc 11 0  DC  15V
+*Vee 12 0  DC -15V
+
+
+*--------- testbench BODE & ZIN (H(fn) = 1/100) --
+VAC   1  0  AC 1V
+*XAC   1  0  15 highPass12
+*--------- testbench ZOUT (H(fn) = 1/100) --------
+*VIMP  21  0  0V
+*IIMP   0 23  AC 1A
+*XIMP  21  0  23 tnetwork_h100
+*--------- testbench STAP (H(fn) = 1/100) --------
+**VTRAN 31  0  PWL(0 0V 0.5ms 0V 0.501ms 1V 6ms 1V)
+**XTRAN 31  0  33 tnetwork_h100
+*--------- testbench BODE & ZIN (H(fn) = 1/20) ---
+*VACh20 41  0  AC 1V
+*XACh20 41  0  43 tnetwork_h20
+*
+*--------- ANALYSIS ------------------------------
+.AC DEC 100 10HZ 10000kHZ
+.MC 10 AC V(5) YMAX LIST OUTPUT ALL
+*.TRAN 0.01ms 6ms
+*
+*--------- RESULTS -------------------------------
+.PROBE
+* out tnetwork_h100: V(13)
+* out tnetwork_h20:  V(43)
+.END
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     Resistor MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               rmod            
+           R    1.000000E+03 
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     Capacitor MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               cmod            
+           C    1.000000E-09 
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO NOMINAL
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000      
+
+(Xopamp1.10)    0.0000                (Xopamp1.20)    0.0000                    
+
+(Xopamp1.30)    0.0000                (Xopamp2.10)    0.0000                    
+
+(Xopamp2.20)    0.0000                (Xopamp2.30)    0.0000                    
+
+(Xopamp3.10)    0.0000                (Xopamp3.20)    0.0000                    
+
+(Xopamp3.30)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     UPDATED MODEL PARAMETERS         TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO NOMINAL
+
+******************************************************************************
+
+
+
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING cmod
+                                    c1           c2      
+                  C             1.0000E-09   1.0000E-09  
+                               
+    
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING rmod
+                                    r1           r2      r3           
+                  R             1.0000E+03   1.0000E+03   1.0000E+03  
+
+    
+                                    r4           r5      r6           
+                  R             1.0000E+03   1.0000E+03   1.0000E+03  
+
+    
+                                    r7                                
+                  R             1.0000E+03  
+
+    
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 2
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000      
+
+(Xopamp1.10)    0.0000                (Xopamp1.20)    0.0000                    
+
+(Xopamp1.30)    0.0000                (Xopamp2.10)    0.0000                    
+
+(Xopamp2.20)    0.0000                (Xopamp2.30)    0.0000                    
+
+(Xopamp3.10)    0.0000                (Xopamp3.20)    0.0000                    
+
+(Xopamp3.30)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     UPDATED MODEL PARAMETERS         TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 2
+
+******************************************************************************
+
+
+
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING cmod
+                                    c1           c2      
+                  C             9.9885E-10   9.9952E-10  
+                               
+    
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING rmod
+                                    r1           r2      r3           
+                  R             1.0027E+03   1.0077E+03   9.9493E+02  
+
+    
+                                    r4           r5      r6           
+                  R             1.0028E+03   9.9494E+02   1.0028E+03  
+
+    
+                                    r7                                
+                  R             9.9556E+02  
+
+    
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 3
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000      
+
+(Xopamp1.10)    0.0000                (Xopamp1.20)    0.0000                    
+
+(Xopamp1.30)    0.0000                (Xopamp2.10)    0.0000                    
+
+(Xopamp2.20)    0.0000                (Xopamp2.30)    0.0000                    
+
+(Xopamp3.10)    0.0000                (Xopamp3.20)    0.0000                    
+
+(Xopamp3.30)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     UPDATED MODEL PARAMETERS         TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 3
+
+******************************************************************************
+
+
+
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING cmod
+                                    c1           c2      
+                  C             1.0029E-09   9.9256E-10  
+                               
+    
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING rmod
+                                    r1           r2      r3           
+                  R             1.0080E+03   1.0034E+03   9.9662E+02  
+
+    
+                                    r4           r5      r6           
+                  R             9.9677E+02   1.0057E+03   9.9340E+02  
+
+    
+                                    r7                                
+                  R             1.0009E+03  
+
+    
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 4
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000      
+
+(Xopamp1.10)    0.0000                (Xopamp1.20)    0.0000                    
+
+(Xopamp1.30)    0.0000                (Xopamp2.10)    0.0000                    
+
+(Xopamp2.20)    0.0000                (Xopamp2.30)    0.0000                    
+
+(Xopamp3.10)    0.0000                (Xopamp3.20)    0.0000                    
+
+(Xopamp3.30)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     UPDATED MODEL PARAMETERS         TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 4
+
+******************************************************************************
+
+
+
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING cmod
+                                    c1           c2      
+                  C             9.9422E-10   9.9149E-10  
+                               
+    
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING rmod
+                                    r1           r2      r3           
+                  R             1.0048E+03   9.9894E+02   1.0045E+03  
+
+    
+                                    r4           r5      r6           
+                  R             1.0024E+03   9.9975E+02   1.0047E+03  
+
+    
+                                    r7                                
+                  R             9.9423E+02  
+
+    
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 5
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000      
+
+(Xopamp1.10)    0.0000                (Xopamp1.20)    0.0000                    
+
+(Xopamp1.30)    0.0000                (Xopamp2.10)    0.0000                    
+
+(Xopamp2.20)    0.0000                (Xopamp2.30)    0.0000                    
+
+(Xopamp3.10)    0.0000                (Xopamp3.20)    0.0000                    
+
+(Xopamp3.30)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     UPDATED MODEL PARAMETERS         TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 5
+
+******************************************************************************
+
+
+
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING cmod
+                                    c1           c2      
+                  C             1.0034E-09   1.0068E-09  
+                               
+    
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING rmod
+                                    r1           r2      r3           
+                  R             9.9178E+02   9.9871E+02   9.9866E+02  
+
+    
+                                    r4           r5      r6           
+                  R             1.0064E+03   1.0005E+03   1.0046E+03  
+
+    
+                                    r7                                
+                  R             9.9451E+02  
+
+    
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 6
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000      
+
+(Xopamp1.10)    0.0000                (Xopamp1.20)    0.0000                    
+
+(Xopamp1.30)    0.0000                (Xopamp2.10)    0.0000                    
+
+(Xopamp2.20)    0.0000                (Xopamp2.30)    0.0000                    
+
+(Xopamp3.10)    0.0000                (Xopamp3.20)    0.0000                    
+
+(Xopamp3.30)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     UPDATED MODEL PARAMETERS         TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 6
+
+******************************************************************************
+
+
+
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING cmod
+                                    c1           c2      
+                  C             9.9843E-10   1.0099E-09  
+                               
+    
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING rmod
+                                    r1           r2      r3           
+                  R             1.0037E+03   1.0002E+03   1.0095E+03  
+
+    
+                                    r4           r5      r6           
+                  R             9.9134E+02   9.9266E+02   1.0057E+03  
+
+    
+                                    r7                                
+                  R             9.9174E+02  
+
+    
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 7
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000      
+
+(Xopamp1.10)    0.0000                (Xopamp1.20)    0.0000                    
+
+(Xopamp1.30)    0.0000                (Xopamp2.10)    0.0000                    
+
+(Xopamp2.20)    0.0000                (Xopamp2.30)    0.0000                    
+
+(Xopamp3.10)    0.0000                (Xopamp3.20)    0.0000                    
+
+(Xopamp3.30)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     UPDATED MODEL PARAMETERS         TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 7
+
+******************************************************************************
+
+
+
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING cmod
+                                    c1           c2      
+                  C             9.9833E-10   1.0005E-09  
+                               
+    
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING rmod
+                                    r1           r2      r3           
+                  R             1.0037E+03   1.0046E+03   1.0016E+03  
+
+    
+                                    r4           r5      r6           
+                  R             1.0048E+03   9.9065E+02   9.9344E+02  
+
+    
+                                    r7                                
+                  R             9.9174E+02  
+
+    
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 8
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000      
+
+(Xopamp1.10)    0.0000                (Xopamp1.20)    0.0000                    
+
+(Xopamp1.30)    0.0000                (Xopamp2.10)    0.0000                    
+
+(Xopamp2.20)    0.0000                (Xopamp2.30)    0.0000                    
+
+(Xopamp3.10)    0.0000                (Xopamp3.20)    0.0000                    
+
+(Xopamp3.30)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     UPDATED MODEL PARAMETERS         TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 8
+
+******************************************************************************
+
+
+
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING cmod
+                                    c1           c2      
+                  C             1.0025E-09   9.9580E-10  
+                               
+    
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING rmod
+                                    r1           r2      r3           
+                  R             1.0069E+03   1.0030E+03   9.9674E+02  
+
+    
+                                    r4           r5      r6           
+                  R             9.9334E+02   9.9658E+02   1.0076E+03  
+
+    
+                                    r7                                
+                  R             1.0066E+03  
+
+    
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 9
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000      
+
+(Xopamp1.10)    0.0000                (Xopamp1.20)    0.0000                    
+
+(Xopamp1.30)    0.0000                (Xopamp2.10)    0.0000                    
+
+(Xopamp2.20)    0.0000                (Xopamp2.30)    0.0000                    
+
+(Xopamp3.10)    0.0000                (Xopamp3.20)    0.0000                    
+
+(Xopamp3.30)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     UPDATED MODEL PARAMETERS         TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 9
+
+******************************************************************************
+
+
+
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING cmod
+                                    c1           c2      
+                  C             1.0023E-09   9.9690E-10  
+                               
+    
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING rmod
+                                    r1           r2      r3           
+                  R             9.9840E+02   9.9722E+02   1.0059E+03  
+
+    
+                                    r4           r5      r6           
+                  R             1.0029E+03   1.0075E+03   9.9646E+02  
+
+    
+                                    r7                                
+                  R             9.9705E+02  
+
+    
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 10
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000      
+
+(Xopamp1.10)    0.0000                (Xopamp1.20)    0.0000                    
+
+(Xopamp1.30)    0.0000                (Xopamp2.10)    0.0000                    
+
+(Xopamp2.20)    0.0000                (Xopamp2.30)    0.0000                    
+
+(Xopamp3.10)    0.0000                (Xopamp3.20)    0.0000                    
+
+(Xopamp3.30)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     UPDATED MODEL PARAMETERS         TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO PASS 10
+
+******************************************************************************
+
+
+
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING cmod
+                                    c1           c2      
+                  C             1.0011E-09   1.0048E-09  
+                               
+    
+     **** CURRENT MODEL PARAMETERS FOR DEVICES REFERENCING rmod
+                                    r1           r2      r3           
+                  R             1.0030E+03   1.0062E+03   9.9636E+02  
+
+    
+                                    r4           r5      r6           
+                  R             1.0086E+03   1.0074E+03   1.0044E+03  
+
+    
+                                    r7                                
+                  R             9.9447E+02  
+
+    
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SORTED DEVIATIONS OF V(5)        TEMPERATURE =   27.000 DEG C
+
+                      MONTE CARLO SUMMARY
+
+******************************************************************************
+
+
+
+
+
+Mean Deviation =    -.0456
+Sigma          =     .1795
+
+ RUN                    MAX DEVIATION FROM NOMINAL
+
+Pass    3                .3076  (1.71 sigma)  higher  at F =  933.25
+                        ( 104.69% of Nominal)
+
+Pass    4                .2374  (1.32 sigma)  lower  at F =  933.25
+                        (  96.377% of Nominal)
+
+Pass   10                .2285  (1.27 sigma)  lower  at F =    1.0715E+03
+                        (  96.975% of Nominal)
+
+Pass    8                .217   (1.21 sigma)  higher  at F =    1.0233E+03
+                        ( 102.68% of Nominal)
+
+Pass    7                .1557  ( .87 sigma)  lower  at F =    1.0471E+03
+                        (  98.034% of Nominal)
+
+Pass    9                .1278  ( .71 sigma)  lower  at F =    1.0965E+03
+                        (  98.201% of Nominal)
+
+Pass    5                .1263  ( .70 sigma)  lower  at F =  977.24
+                        (  98.367% of Nominal)
+
+Pass    2                .0302  ( .17 sigma)  lower  at F =    1.0233E+03
+                        (  99.627% of Nominal)
+
+Pass    6                .0291  ( .16 sigma)  lower  at F =  933.25
+                        (  99.557% of Nominal)
+
+
+
+          JOB CONCLUDED
+
+**** 05/19/18 22:34:21 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     JOB STATISTICS SUMMARY
+
+
+******************************************************************************
+
+
+
+  Total job time (using Solver 1)   =         .11
+

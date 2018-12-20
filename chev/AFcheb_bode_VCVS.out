@@ -1,0 +1,196 @@
+
+**** 05/21/18 15:23:54 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     CIRCUIT DESCRIPTION
+
+
+******************************************************************************
+
+
+
+* HightPass 12                          -
+*                               -
+* Author: Ruben Kindt           -
+* Date: 24/04/2018                      -
+*----------------------------
+*
+*--------- MODELS for passive components ---------
+.model rmod  res(r = 1    DEV  5%)
+.model cmod  cap(c = 1n    DEV 20%)
+*.inc OpampIdeal.cir
+.inc opamp84VCVS.cir
+
+**** INCLUDING opamp84VCVS.cir ****
+*
+* vcvs opamp model (TL084)
+*
+* Adc   = 200000   (amplification at DC)
+* fu    = 3 MHz    (unity gain frequency)
+* f-3dB = 5 Hz = fu/Adc
+* Rin   = 2E6 mega 1E12 Ohm (input impedance) 
+* Rout  = 50 uit 100 Ohm  (output impedance)
+
+* CONNECTIONS:    NON-INVERTING INPUT
+*                 | INVERTING INPUT
+*                 | | OUTPUT
+*                 | | |
+.SUBCKT opamp84  1 2 3
+E1    10  0    1 2   200000
+E2    30  0   20 0   1
+R1    10 20  60KOHM
+C1    20  0  159.2NFARAD
+ROUT  30  3  5OHM
+RIN    1  2  2E6OHM
+.ENDS
+
+**** RESUMING AFcheb_bode_VCVS.cir ****
+*.inc TL084.cir
+
+Xopamp1   2 3 4  opamp84 
+*Xopamp11  0 41 42  opamp84 
+Xopamp21  0 5 6  opamp84 
+Xopamp22  0 7 8  opamp84 
+Xopamp23  0 9 11 opamp84 
+
+*Vcc 11 0  DC  15V
+*Vee 12 0  DC -15V
+*Xopamp1  2 3 11 12 4 TL084 
+*Xopamp21  0 5 11 12 6  TL084 
+*Xopamp22  0 7 11 12 8  TL084 
+*Xopamp23  0 9 11 12 10 TL084
+
+*name knoop1 knoop2 model mulitplier
+*EERSTE ORDE 
+r1   1   2 rmod  15900
+r2   3   0 rmod  54300
+r3   4   3 rmod  22500
+c1   2   0 cmod  10
+
+
+*TWEEDE ORDE
+rr1   4   5  rmod  122.8
+rr2   5   6  rmod  532.9
+rr3   5   11 rmod  173.7
+rr4   6   7  rmod  173.7
+rr5   8   9  rmod  173.7
+rr6   9   11 rmod  173.7
+cc1   5   6  cmod  1 
+cc2   7   8  cmod  1
+
+
+*--------- testbench BODE & ZIN  --
+VAC   1  0  AC 1V
+*--------- testbench ZOUT  --------
+*VIMP  21  0  0V
+*IIMP   0 23  AC 1A
+*XIMP  21  0  23 highPass12
+*--------- testbench STAP  --------
+*VTRAN 1  0  PWL(0 0V 0.5ms 0V 0.501ms 1V 6ms 1V)
+**XTRAN 31  0  33 highPass12_100
+*--------- ANALYSIS ------------------------------
+.AC DEC 100 10HZ 100kHZ
+*.MC 10 AC V(5) YMAX LIST OUTPUT ALL
+*.TRAN 0.01ms 6ms
+*
+*--------- RESULTS -------------------------------
+.PROBE
+.END
+
+**** 05/21/18 15:23:54 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     Resistor MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               rmod            
+           R    1            
+
+
+**** 05/21/18 15:23:54 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     Capacitor MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               cmod            
+           C    1.000000E-09 
+
+
+**** 05/21/18 15:23:54 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    3)    0.0000  (    4)    0.0000      
+
+(    5)    0.0000  (    6)    0.0000  (    7)    0.0000  (    8)    0.0000      
+
+(    9)    0.0000  (   11)    0.0000  (Xopamp1.10)    0.0000                    
+
+(Xopamp1.20)    0.0000                (Xopamp1.30)    0.0000                    
+
+(Xopamp21.10)    0.0000               (Xopamp21.20)    0.0000                   
+
+(Xopamp21.30)    0.0000               (Xopamp22.10)    0.0000                   
+
+(Xopamp22.20)    0.0000               (Xopamp22.30)    0.0000                   
+
+(Xopamp23.10)    0.0000               (Xopamp23.20)    0.0000                   
+
+(Xopamp23.30)    0.0000               
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+
+          JOB CONCLUDED
+
+**** 05/21/18 15:23:54 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     JOB STATISTICS SUMMARY
+
+
+******************************************************************************
+
+
+
+  Total job time (using Solver 1)   =        0.00
+

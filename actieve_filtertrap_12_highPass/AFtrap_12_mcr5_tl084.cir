@@ -1,0 +1,66 @@
+*----------------------------
+* HightPass 12		        	-
+*                           	-
+* Author: Ruben Kindt       	-
+* Date: 24/04/2018      		-
+*----------------------------
+*
+*--------- MODELS for passive components ---------
+.model rmod  res(r = 1k    DEV  5%)
+.model cmod  cap(c = 1n    DEV 20%)
+.inc TL084.cir
+*--------- NETLISTS ------------------------------
+*--- netlist bridged T-network - H(fn) = 1/100 ---
+*.SUBCKT highPass12 1 100 5
+Vcc 20 0  DC  15V
+Vee 30 0  DC -15V
+* CONNECTIONS:   NON-INVERTING INPUT
+*                | INVERTING INPUT
+*                | | POSITIVE POWER SUPPLY
+*                | | | NEGATIVE POWER SUPPLY
+*                | | | | OUTPUT
+*                | | | | 
+
+
+Xopamp1  7  2  20  30  5 TL084  
+Xopamp2  0  6  20  30  8 TL084  
+Xopamp3  0  9  20  30  4 TL084  
+*name knoop1 knoop2 model mulitplier
+r1   5   6 rmod  100
+r2   8   9 rmod  100
+r3   1   2 rmod  1
+r4   7   0 rmod  1
+r5   2   4 rmod  2
+r6   2   5 rmod  2
+r7   7   8 rmod  24.5
+
+c1   6   8 cmod  1
+c2   9 	 4 cmod  2.53 
+*.ends
+
+
+
+*--------- testbench BODE & ZIN (H(fn) = 1/100) --
+VAC   1  0  AC 1V
+*XAC   1  0  15 highPass12
+*--------- testbench ZOUT (H(fn) = 1/100) --------
+*VIMP  21  0  0V
+*IIMP   0 23  AC 1A
+*XIMP  21  0  23 tnetwork_h100
+*--------- testbench STAP (H(fn) = 1/100) --------
+**VTRAN 1  0  PWL(0 0V 0.5ms 0V 0.501ms 1V 6ms 1V)
+**XTRAN 31  0  33 tnetwork_h100
+*--------- testbench BODE & ZIN (H(fn) = 1/20) ---
+*VACh20 41  0  AC 1V
+*XACh20 41  0  43 tnetwork_h20
+*
+*--------- ANALYSIS ------------------------------
+.AC DEC 100 10HZ 100MEGHZ
+.MC 10 AC V(5) YMAX LIST OUTPUT ALL
+.TRAN 0.001ms 6ms
+*
+*--------- RESULTS -------------------------------
+.PROBE
+* out tnetwork_h100: V(13)
+* out tnetwork_h20:  V(43)
+.END

@@ -1,0 +1,16 @@
+*
+* vcvs opamp model (TL084)
+*
+* Adc   = 200000   (amplification at DC)
+* fu    = 3 MHz    (unity gain frequency)
+* f-3dB = 5 Hz = fu/Adc
+* Rin   = 1E12 Ohm (input impedance) 
+* Rout  = 100 Ohm  (output impedance)
+
+* CONNECTIONS:    NON-INVERTING INPUT
+*                  | INVERTING INPUT
+*              	   | | OUTPUT
+*              	   | | |
+.SUBCKT opampIdeal  1 2 3
+E1    3  0    1 2   200000
+.ENDS

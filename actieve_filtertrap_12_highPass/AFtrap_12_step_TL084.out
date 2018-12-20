@@ -1,0 +1,303 @@
+
+**** 05/15/18 22:59:40 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     CIRCUIT DESCRIPTION
+
+
+******************************************************************************
+
+
+
+* HightPass 12                          -
+*                               -
+* Author: Ruben Kindt           -
+* Date: 24/04/2018                      -
+*----------------------------
+*
+*--------- MODELS for passive components ---------
+.model rmod  res(r = 1k    DEV  5%)
+.model cmod  cap(c = 1n    DEV 20%)
+.inc TL084.cir
+
+**** INCLUDING TL084.cir ****
+* TL084 OPERATIONAL AMPLIFIER "MACROMODEL" SUBCIRCUIT
+* CREATED USING PARTS RELEASE 4.01 ON 06/16/89 AT 13:08
+* (REV N/A)      SUPPLY VOLTAGE: +/-15V
+* CONNECTIONS:   NON-INVERTING INPUT
+*                | INVERTING INPUT
+*                | | POSITIVE POWER SUPPLY
+*                | | | NEGATIVE POWER SUPPLY
+*                | | | | OUTPUT
+*                | | | | |
+.SUBCKT TL084    1 2 3 4 5
+*
+  C1   11 12 3.498E-12
+  C2    6  7 15.00E-12
+  DC    5 53 DX
+  DE   54  5 DX
+  DLP  90 91 DX
+  DLN  92 90 DX
+  DP    4  3 DX
+  EGND 99  0 POLY(2) (3,0) (4,0) 0 .5 .5
+  FB    7 99 POLY(5) VB VC VE VLP VLN 0 4.715E6 -5E6 5E6 5E6 -5E6
+  GA    6  0 11 12 282.8E-6
+  GCM   0  6 10 99 8.942E-9
+  ISS   3 10 DC 195.0E-6
+  HLIM 90  0 VLIM 1K
+  J1   11  2 10 JX
+  J2   12  1 10 JX
+  R2    6  9 100.0E3
+  RD1   4 11 3.536E3
+  RD2   4 12 3.536E3
+  RO1   8  5 150
+  RO2   7 99 150
+  RP    3  4 2.143E3
+  RSS  10 99 1.026E6
+  VB    9  0 DC 0
+  VC    3 53 DC 2.200
+  VE   54  4 DC 2.200
+  VLIM  7  8 DC 0
+  VLP  91  0 DC 25
+  VLN   0 92 DC 25
+.MODEL DX D(IS=800.0E-18)
+.MODEL JX PJF(IS=15.00E-12 BETA=270.1E-6 VTO=-1)
+.ENDS
+
+**** RESUMING AFtrap_12_step_TL084.cir ****
+*--------- NETLISTS ------------------------------
+*--- netlist bridged T-network - H(fn) = 1/100 ---
+*.SUBCKT highPass12 1 100 5
+Vcc 20 0  DC  15V
+Vee 30 0  DC -15V
+* CONNECTIONS:   NON-INVERTING INPUT
+*                | INVERTING INPUT
+*                | | POSITIVE POWER SUPPLY
+*                | | | NEGATIVE POWER SUPPLY
+*                | | | | OUTPUT
+*                | | | | 
+
+
+Xopamp1  7  2  20  30  5 TL084  
+Xopamp2  0  6  20  30  8 TL084  
+Xopamp3  0  9  20  30  4 TL084  
+*name knoop1 knoop2 model mulitplier
+r1   5   6 rmod  100
+r2   8   9 rmod  100
+r3   1   2 rmod  1
+r4   7   0 rmod  1
+r5   2   4 rmod  2
+r6   2   5 rmod  2
+r7   7   8 rmod  24.5
+
+c1   6   8 cmod  1
+c2   9   4 cmod  2.53 
+*.ends
+
+
+
+*--------- testbench BODE & ZIN (H(fn) = 1/100) --
+*VAC   1  0  AC 1V
+*XAC   1  0  15 highPass12
+*--------- testbench ZOUT (H(fn) = 1/100) --------
+*VIMP  21  0  0V
+*IIMP   0 23  AC 1A
+*XIMP  21  0  23 tnetwork_h100
+*--------- testbench STAP (H(fn) = 1/100) --------
+VTRAN 1  0  PWL(0 0V 0.5ms 0V 0.501ms 1V 6ms 1V)
+**XTRAN 31  0  33 tnetwork_h100
+*--------- testbench BODE & ZIN (H(fn) = 1/20) ---
+*VACh20 41  0  AC 1V
+*XACh20 41  0  43 tnetwork_h20
+*
+*--------- ANALYSIS ------------------------------
+*.AC DEC 100 10HZ 100MEGHZ
+*.MC 10 AC V(5) YMAX LIST OUTPUT ALL
+.TRAN 0.01ms 6ms 0ms 0.0001ms
+*
+*--------- RESULTS -------------------------------
+.PROBE
+* out tnetwork_h100: V(13)
+* out tnetwork_h20:  V(43)
+.END
+
+**** 05/15/18 22:59:40 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     Diode MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               Xopamp1.DX      Xopamp2.DX      Xopamp3.DX      
+          IS  800.000000E-18  800.000000E-18  800.000000E-18 
+
+
+**** 05/15/18 22:59:40 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     Junction FET MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               Xopamp1.JX      Xopamp2.JX      Xopamp3.JX      
+               PJF             PJF             PJF             
+         VTO   -1              -1              -1            
+        BETA  270.100000E-06  270.100000E-06  270.100000E-06 
+          IS   15.000000E-12   15.000000E-12   15.000000E-12 
+
+
+**** 05/15/18 22:59:40 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     Resistor MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               rmod            
+           R    1.000000E+03 
+
+
+**** 05/15/18 22:59:40 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     Capacitor MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               cmod            
+           C    1.000000E-09 
+
+
+**** 05/15/18 22:59:40 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     INITIAL TRANSIENT SOLUTION       TEMPERATURE =   27.000 DEG C
+
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2) 11.53E-06  (    4) 30.75E-06  (    5) 15.48E-06      
+
+(    6) 10.97E-06  (    7) 563.6E-09  (    8) 15.48E-06  (    9) 10.97E-06      
+
+(   20)   15.0000  (   30)  -15.0000  (Xopamp1.6)-2.279E-09                     
+
+(Xopamp1.7) 15.78E-06                 (Xopamp1.8) 15.78E-06                     
+
+(Xopamp1.9)    0.0000                 (Xopamp2.6)-2.219E-09                     
+
+(Xopamp2.7) 15.57E-06                 (Xopamp2.8) 15.57E-06                     
+
+(Xopamp2.9)    0.0000                 (Xopamp3.6)-4.764E-09                     
+
+(Xopamp3.7) 32.19E-06                 (Xopamp3.8) 32.19E-06                     
+
+(Xopamp3.9)    0.0000                 (Xopamp1.10)    -.3986                    
+
+(Xopamp1.11)  -14.6550                (Xopamp1.12)  -14.6550                    
+
+(Xopamp1.53)   12.8000                (Xopamp1.54)  -12.8000                    
+
+(Xopamp1.90) 2.016E-06                (Xopamp1.91)   25.0000                    
+
+(Xopamp1.92)  -25.0000                (Xopamp1.99)    0.0000                    
+
+(Xopamp2.10)    -.3986                (Xopamp2.11)  -14.6550                    
+
+(Xopamp2.12)  -14.6550                (Xopamp2.53)   12.8000                    
+
+(Xopamp2.54)  -12.8000                (Xopamp2.90) 653.7E-09                    
+
+(Xopamp2.91)   25.0000                (Xopamp2.92)  -25.0000                    
+
+(Xopamp2.99)    0.0000                (Xopamp3.10)    -.3986                    
+
+(Xopamp3.11)  -14.6550                (Xopamp3.12)  -14.6550                    
+
+(Xopamp3.53)   12.8000                (Xopamp3.54)  -12.8000                    
+
+(Xopamp3.90) 9.608E-06                (Xopamp3.91)   25.0000                    
+
+(Xopamp3.92)  -25.0000                (Xopamp3.99)    0.0000                
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    Vcc         -4.258E-02
+    Vee          4.258E-02
+    VTRAN        1.153E-08
+    Xopamp1.VB  -2.277E-14
+    Xopamp1.VC   1.280E-11
+    Xopamp1.VE   1.280E-11
+    Xopamp1.VLIM   2.016E-09
+    Xopamp1.VLP  -2.500E-11
+    Xopamp1.VLN  -2.500E-11
+    Xopamp2.VB  -2.219E-14
+    Xopamp2.VC   1.280E-11
+    Xopamp2.VE   1.280E-11
+    Xopamp2.VLIM   6.537E-10
+    Xopamp2.VLP  -2.500E-11
+    Xopamp2.VLN  -2.500E-11
+    Xopamp3.VB  -4.764E-14
+    Xopamp3.VC   1.280E-11
+    Xopamp3.VE   1.280E-11
+    Xopamp3.VLIM   9.608E-09
+    Xopamp3.VLP  -2.500E-11
+    Xopamp3.VLN  -2.500E-11
+
+    TOTAL POWER DISSIPATION   1.28E+00  WATTS
+
+
+
+          JOB CONCLUDED
+
+**** 05/15/18 22:59:40 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     JOB STATISTICS SUMMARY
+
+
+******************************************************************************
+
+
+
+  Total job time (using Solver 1)   =        4.47
+

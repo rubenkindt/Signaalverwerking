@@ -1,0 +1,63 @@
+*----------------------------
+* HightPass 12		        	-
+*                           	-
+* Author: Ruben Kindt       	-
+* Date: 24/04/2018      		-
+*----------------------------
+*
+*--------- MODELS for passive components ---------
+.model rmod  res(r = 1k    DEV  1%)
+.model cmod  cap(c = 1n    DEV 1%)
+.inc OpampIdeal.cir
+*.inc opamp84VCVS.cir
+*.inc TL084.cir
+
+Xopamp1   2 3 4  opampIdeal 
+Xopamp21  0 5 6  opampIdeal 
+Xopamp22  0 7 8  opampIdeal 
+Xopamp23  0 9 10 opampIdeal 
+
+*Vcc 11 0  DC  15V
+*Vee 12 0  DC -15V
+*Xopamp1  2 3 11 12 4 TL084 
+*Xopamp21  0 5 11 12 6  TL084 
+*Xopamp22  0 7 11 12 8  TL084 
+*Xopamp23  0 9 11 12 10 TL084
+
+*name knoop1 knoop2 model mulitplier
+*EERSTE ORDE 
+c1   2   0 cmod  10
+r1   1   2 rmod  37
+r2   3   0 rmod  130
+r3   4   3 rmod  53
+
+
+
+*TWEEDE ORDE
+cc1   5   6  cmod  1 
+cc2   7   8  cmod  1
+rr1   4   5  rmod  165
+rr2   5   6  rmod  378
+rr3   5   10 rmod  165
+rr4   6   7  rmod  165
+rr5   8   9  rmod  165
+rr6   9   10 rmod  165
+
+
+*--------- testbench BODE & ZIN  --
+VAC   1  0  AC 1V
+*--------- testbench ZOUT  --------
+*VIMP  21  0  0V
+*IIMP   0 23  AC 1A
+*XIMP  21  0  23 highPass12
+*--------- testbench STAP  --------
+*VTRAN 1  0  PWL(0 0V 0.5ms 0V 0.501ms 1V 6ms 1V)
+**XTRAN 31  0  33 highPass12_100
+*--------- ANALYSIS ------------------------------
+.AC DEC 100 10HZ 10kHZ
+*.MC 10 AC V(5) YMAX LIST OUTPUT ALL
+*.TRAN 0.01ms 6ms
+*
+*--------- RESULTS -------------------------------
+.PROBE
+.END

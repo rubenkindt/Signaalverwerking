@@ -1,0 +1,176 @@
+
+**** 05/19/18 22:30:42 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     CIRCUIT DESCRIPTION
+
+
+******************************************************************************
+
+
+
+* HightPass 12                          -
+*                               -
+* Author: Ruben Kindt           -
+* Date: 24/04/2018                      -
+*----------------------------
+*
+*--------- MODELS for passive components ---------
+.model rmod  res(r = 1k    DEV  5%)
+
+.model cmod  cap(c = 1n    DEV 20%)
+
+.inc OpampIdeal.cir
+
+**** INCLUDING OpampIdeal.cir ****
+*
+* vcvs opamp model (TL084)
+*
+* Adc   = 200000   (amplification at DC)
+* fu    = 3 MHz    (unity gain frequency)
+* f-3dB = 5 Hz = fu/Adc
+* Rin   = 1E12 Ohm (input impedance) 
+* Rout  = 100 Ohm  (output impedance)
+
+* CONNECTIONS:    NON-INVERTING INPUT
+*                  | INVERTING INPUT
+*                  | | OUTPUT
+*                  | | |
+.SUBCKT opampIdeal  1 2 3
+E1    3  0    1 2   200000
+.ENDS
+
+**** RESUMING AFtrap_12_bode_ideaal.cir ****
+*--------- NETLISTS ------------------------------
+*--- netlist bridged T-network - H(fn) = 1/100 ---
+*.SUBCKT highPass12 1 100 5
+* CONNECTIONS:      
+*               NON-INVERTING INPUT +
+*       |   | INVERTING INPUT   -
+*       |   |  | OUTP
+Xopamp1  7  2  5 opampIdeal  
+Xopamp2  0  6  8 opampIdeal  
+Xopamp3  0  9  4 opampIdeal  
+*name knoop1 knoop2 model mulitplier
+r1   5   6 rmod  100*11.3
+r2   8   9 rmod  100*11.3
+r3   1   2 rmod  1*11.3
+r4   7   0 rmod  1*11.3
+r5   2   4 rmod  2
+r6   2   5 rmod  2*11.3
+r7   7   8 rmod  24.5*11.3
+
+c1   6   8 cmod  1*1
+c2   9   4 cmod  2.53 
+*.ends
+
+
+
+*--------- testbench BODE & ZIN (H(fn) = 1/100) --
+VAC   1  0  AC 1V
+*XAC   1  0  15 highPass12
+*--------- testbench ZOUT (H(fn) = 1/100) --------
+*VIMP  21  0  0V
+*IIMP   0 23  AC 1A
+*XIMP  21  0  23 tnetwork_h100
+*--------- testbench STAP (H(fn) = 1/100) --------
+**VTRAN 31  0  PWL(0 0V 0.5ms 0V 0.501ms 1V 6ms 1V)
+**XTRAN 31  0  33 tnetwork_h100
+*--------- testbench BODE & ZIN (H(fn) = 1/20) ---
+*VACh20 41  0  AC 1V
+*XACh20 41  0  43 tnetwork_h20
+*
+*--------- ANALYSIS ------------------------------
+.AC DEC 100 10HZ 100kHZ
+*.MC 10 AC V(13) YMAX LIST OUTPUT ALL
+*.TRAN 0.01ms 6ms
+*
+*--------- RESULTS -------------------------------
+.PROBE
+* out tnetwork_h100: V(13)
+* out tnetwork_h20:  V(43)
+.END
+
+**** 05/19/18 22:30:42 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     Resistor MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               rmod            
+           R    1.000000E+03 
+
+
+**** 05/19/18 22:30:42 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     Capacitor MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               cmod            
+           C    1.000000E-09 
+
+
+**** 05/19/18 22:30:42 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     SMALL SIGNAL BIAS SOLUTION       TEMPERATURE =   27.000 DEG C
+
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)    0.0000  (    2)    0.0000  (    4)    0.0000  (    5)    0.0000      
+
+(    6)    0.0000  (    7)    0.0000  (    8)    0.0000  (    9)    0.0000  
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    VAC          0.000E+00
+
+    TOTAL POWER DISSIPATION   0.00E+00  WATTS
+
+
+
+          JOB CONCLUDED
+
+**** 05/19/18 22:30:42 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     JOB STATISTICS SUMMARY
+
+
+******************************************************************************
+
+
+
+  Total job time (using Solver 1)   =        0.00
+

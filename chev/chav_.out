@@ -1,0 +1,100 @@
+
+**** 05/21/18 15:38:36 ******* PSpice Lite (March 2016) ******* ID# 10813 ****
+
+ *----------------------------
+
+
+ ****     CIRCUIT DESCRIPTION
+
+
+******************************************************************************
+
+
+
+* HightPass 12                          -
+*                               -
+* Author: Ruben Kindt           -
+* Date: 24/04/2018                      -
+*----------------------------
+*
+*--------- MODELS for passive components ---------
+.model rmod  res(r = 1    DEV  5%)
+.model cmod  cap(c = 1n    DEV 20%)
+.inc OpampIdeal.cir
+
+**** INCLUDING OpampIdeal.cir ****
+*
+* vcvs opamp model (TL084)
+*
+* Adc   = 200000   (amplification at DC)
+* fu    = 3 MHz    (unity gain frequency)
+* f-3dB = 5 Hz = fu/Adc
+* Rin   = 1E12 Ohm (input impedance) 
+* Rout  = 100 Ohm  (output impedance)
+
+* CONNECTIONS:    NON-INVERTING INPUT
+*                  | INVERTING INPUT
+*                  | | OUTPUT
+*                  | | |
+.SUBCKT opampIdeal  1 2 3
+E1    3  0    1 2   200000
+.ENDS
+
+**** RESUMING chav_.cir ****
+*.inc opamp84VCVS.cir
+*.inc TL084.cir
+
+Xopamp1   2 3 4  opampIdeal 
+*Xopamp11  0 41 42  opamp84 
+Xopamp21  0 5 6  opampIdeal 
+Xopamp22  0 7 8  opampIdeal 
+Xopamp23  0 9 10 opampIdeal 
+
+*opampIdeal
+*Vcc 11 0  DC  15V
+*Vee 12 0  DC -15V
+*Xopamp1   2 3 11 12 4 TL084 
+*Xopamp21  0 5 11 12 6  TL084 
+*Xopamp22  0 7 11 12 8  TL084 
+*Xopamp23  0 9 11 12 10 TL084
+
+*name knoop1 knoop2 model mulitplier
+*EERSTE ORDE 
+r1   1   2 rmod  15900
+r2   3   0 rmod  54300
+r3   4   3 rmod  22500
+c1   2   0 cmod  10
+
+r    1   0 rmod 0
+----------------$
+ERROR(ORPSIM-16144): Value may not be 0
+
+*TWEEDE ORDE
+rr1   4   5  rmod  122.8
+rr2   5   6  rmod  532.9
+rr3   5   10 rmod  173.7
+rr4   6   7  rmod  173.7
+rr5   8   9  rmod  173.7
+rr6   9   10 rmod  173.7
+cc1   5   6  cmod  1 
+cc2   7   8  cmod  1
+
+
+*--------- testbench BODE & ZIN  --
+*VAC   1  0  AC 1V
+*--------- testbench ZOUT  --------
+*VIMP  21  0  0V
+*IIMP   0 23  AC 1A
+*XIMP  21  0  23 highPass12
+*--------- testbench STAP  --------
+*VTRAN 1  0  PWL(0 0V 0.5ms 0V 0.501ms 1V 6ms 1V)
+**XTRAN 31  0  33 highPass12_100
+*--------- ANALYSIS ------------------------------
+.AC DEC 100 10HZ 100kHZ
+*.MC 10 AC V(8) YMAX LIST OUTPUT ALL
+*.TRAN 0.01ms 6ms
+*
+*--------- RESULTS -------------------------------
+.PROBE
+.END
+
